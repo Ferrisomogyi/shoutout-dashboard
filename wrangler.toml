@@ -1,0 +1,7 @@
+name = "shoutout-outreach-proxy"
+main = "shoutout-api-worker.js"
+compatibility_date = "2024-09-25"
+
+# After deploy, set the secret:
+# npx wrangler secret put INSTANTLY_API_KEY
+# (paste your Instantly API key when prompted)
