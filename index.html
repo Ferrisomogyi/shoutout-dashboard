@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Shoutout Creator Dashboard</title>
+<meta name="theme-color" content="#7c3aed">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiU2hvdXRvdXQgRGFzaGJvYXJkIiwic2hvcnRfbmFtZSI6IlNob3V0b3V0Iiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiMwZjE3MmEiLCJ0aGVtZV9jb2xvciI6IiM3YzNhZWQiLCJpY29ucyI6W119">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; overflow-x: hidden; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #1e293b; }
+::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+.fade-in { animation: fadeIn 0.3s ease-out; }
+.slide-in { animation: slideIn 0.3s ease-out; }
+.pulse { animation: pulse 2s infinite; }
+
+.stat-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155; border-radius: 16px; padding: 20px; transition: all 0.2s; }
+.stat-card:hover { border-color: #7c3aed; transform: translateY(-2px); }
+
+.creator-row { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 14px 16px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; }
+.creator-row:hover { border-color: #7c3aed; }
+.creator-row:active { transform: scale(0.99); }
+
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.badge-sent { background: rgba(96,165,250,0.15); color: #60a5fa; }
+.badge-opened { background: rgba(52,211,153,0.15); color: #34d399; }
+.badge-clicked { background: rgba(167,139,250,0.15); color: #a78bfa; }
+.badge-replied { background: rgba(251,191,36,0.15); color: #fbbf24; }
+.badge-bounced { background: rgba(248,113,113,0.15); color: #f87171; }
+.badge-pending { background: rgba(100,116,139,0.15); color: #94a3b8; }
+.badge-followup { background: rgba(251,146,60,0.15); color: #fb923c; }
+
+.account-tag { display: inline-flex; align-items: center; gap: 3px; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; letter-spacing: 0.3px; }
+.account-ferri { background: rgba(59,130,246,0.12); color: #60a5fa; }
+.account-creators { background: rgba(16,185,129,0.12); color: #34d399; }
+.account-hallo { background: rgba(168,85,247,0.12); color: #c084fc; }
+
+.search-input { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px 16px 12px 44px; color: #e2e8f0; font-size: 15px; width: 100%; outline: none; transition: border-color 0.2s; }
+.search-input:focus { border-color: #7c3aed; }
+.search-input::placeholder { color: #64748b; }
+
+.filter-chip { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid #334155; background: transparent; color: #94a3b8; transition: all 0.15s; white-space: nowrap; }
+.filter-chip.active { background: #7c3aed; border-color: #7c3aed; color: white; }
+.filter-chip:hover:not(.active) { border-color: #7c3aed; color: #c4b5fd; }
+
+.tab-bar { display: flex; position: fixed; bottom: 0; left: 0; right: 0; background: #0f172a; border-top: 1px solid #1e293b; padding: 8px 0 env(safe-area-inset-bottom, 8px); z-index: 50; }
+.tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px; color: #64748b; font-size: 10px; font-weight: 500; cursor: pointer; transition: color 0.15s; }
+.tab-item.active { color: #7c3aed; }
+.tab-item svg { width: 22px; height: 22px; }
+
+.progress-bar { height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease-out; }
+
+.detail-panel { position: fixed; top: 0; right: 0; bottom: 0; width: 100%; max-width: 480px; background: #0f172a; border-left: 1px solid #334155; z-index: 100; overflow-y: auto; padding: 20px; padding-bottom: 100px; }
+.detail-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 99; }
+
+.timeline-item { position: relative; padding-left: 28px; padding-bottom: 20px; }
+.timeline-item::before { content: ''; position: absolute; left: 7px; top: 24px; bottom: 0; width: 2px; background: #334155; }
+.timeline-item:last-child::before { display: none; }
+.timeline-dot { position: absolute; left: 0; top: 4px; width: 16px; height: 16px; border-radius: 50%; border: 2px solid; }
+
+.step-card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+.step-card.active-step { border-color: #7c3aed; background: linear-gradient(135deg, #1e293b, #7c3aed11); }
+
+.btn-primary { background: #7c3aed; color: white; border: none; border-radius: 10px; padding: 12px 24px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 8px; }
+.btn-primary:hover { background: #6d28d9; }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-followup { background: linear-gradient(135deg, #f97316, #ea580c); color: white; border: none; border-radius: 10px; padding: 12px 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center; }
+.btn-followup:hover { filter: brightness(1.1); }
+.btn-followup:active { transform: scale(0.98); }
+.btn-followup:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-secondary { background: transparent; color: #94a3b8; border: 1px solid #334155; border-radius: 10px; padding: 10px 20px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.btn-secondary:hover { border-color: #7c3aed; color: #c4b5fd; }
+
+.api-input { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 14px; color: #e2e8f0; font-size: 14px; width: 100%; outline: none; font-family: 'SF Mono', 'Fira Code', monospace; }
+.api-input:focus { border-color: #7c3aed; }
+
+.toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 12px 20px; font-size: 13px; font-weight: 500; z-index: 200; display: flex; align-items: center; gap: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+
+.confirm-modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 200; padding: 20px; }
+.confirm-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.7); }
+.confirm-box { position: relative; background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 24px; max-width: 380px; width: 100%; z-index: 1; }
+
+.spinner { width: 24px; height: 24px; border: 3px solid #334155; border-top-color: #7c3aed; border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+@media (min-width: 768px) {
+  .main-content { max-width: 900px; margin: 0 auto; }
+  .stat-grid { grid-template-columns: repeat(3, 1fr) !important; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useMemo, useCallback, useRef } = React;
+
+// ============================================================
+// CONFIG â Edit WORKER_URL after deploying your Cloudflare Worker
+// ============================================================
+const DEFAULT_WORKER_URL = 'https://shoutout-outreach-proxy.ferencsomogyi.workers.dev';
+
+// ============================================================
+// SENDING ACCOUNTS (maps Instantly email â color/label)
+// ============================================================
+const ACCOUNTS = [
+  { id: 'ferri', email: 'ferri@getshoutout.vip', color: '#60a5fa', label: 'ferri@' },
+  { id: 'creators', email: 'creators@getshoutout.vip', color: '#34d399', label: 'creators@' },
+  { id: 'hallo', email: 'hallo@getshoutout.vip', color: '#c084fc', label: 'hallo@' },
+];
+
+function getAccountByEmail(email) {
+  if (!email) return ACCOUNTS[0];
+  const lower = email.toLowerCase();
+  return ACCOUNTS.find(a => lower.includes(a.id)) || ACCOUNTS[0];
+}
+
+// ============================================================
+// DEMO DATA (fallback when no API connected)
+// ============================================================
+const DEMO_CREATORS = (() => {
+  const names = [
+    'Laura van den Berg','Sanne de Vries','Tom Bakker','Anna Jansen','Jan Visser',
+    'Iris Mulder','Eva de Boer','Daan Smit','Sophie Hendriks','Max Peters',
+    'Lisa Vermeer','Nick Dekker','Julia Brouwer','Sem van Dijk','Fleur Bos',
+    'Liam de Groot','Mila Janssen','Thijs van Leeuwen','Noa Klaassen','Finn Scholten',
+    'Emma Willems','Lucas Hoekstra','Zoe van der Meer','Jesse Huisman','Sara Dijkstra',
+    'Tim Maas','Lotte Verhoeven','Ruben Kuijpers','Nina de Jong','Cas Martens',
+    'Elin Vos','Bram Kok','Amy Peeters','Hugo van der Berg','Roos Meijer',
+    'Stijn Jacobs','Lynn de Wit','Rick Hermans','Vera Schouten','Milan van Vliet',
+    'Fenna Groen','Dex Bosman','Jade van Rijn','Owen de Graaf','Yara Molenaar',
+    'Joep Kramer','Merel Sanders','Luuk Blom','Isa van der Linden','Tess Wolters'
+  ];
+  const platforms = ['Instagram','TikTok','YouTube','Instagram','TikTok','YouTube','Instagram','TikTok'];
+  const countries = ['NL','NL','NL','NL','NL','BE','NL','BE','NL','NL'];
+  const statuses = ['replied','opened','sent','opened','clicked','bounced','pending','opened','replied','sent','opened','clicked','sent','opened','pending','replied','opened','sent','bounced','opened','clicked','replied','opened','sent','opened','sent','pending','opened','replied','clicked','opened','sent','opened','clicked','opened','replied','sent','opened','sent','opened','bounced','opened','replied','sent','opened','clicked','opened','sent','replied','opened'];
+
+  return names.map((name, i) => {
+    const firstName = name.split(' ')[0];
+    const handle = '@' + firstName.toLowerCase() + (Math.floor(Math.random()*99)+1);
+    const followers = Math.floor(Math.random() * 450000) + 1000;
+    const status = statuses[i % statuses.length];
+    const account = ACCOUNTS[i % 3];
+    const sentDate = status !== 'pending' ? new Date(2026, 4, 1 + Math.floor(Math.random()*10), Math.floor(Math.random()*12)+8, Math.floor(Math.random()*60)) : null;
+    const openedDate = ['opened','clicked','replied'].includes(status) ? new Date(sentDate.getTime() + Math.random()*86400000*2) : null;
+    const clickedDate = ['clicked','replied'].includes(status) && Math.random() > 0.4 ? new Date(openedDate.getTime() + Math.random()*3600000*4) : null;
+    const repliedDate = status === 'replied' ? new Date((clickedDate || openedDate).getTime() + Math.random()*86400000*3) : null;
+    const hasFollowUp = status !== 'pending' && status !== 'bounced' && !repliedDate && Math.random() > 0.6;
+    const followUpSentDate = hasFollowUp ? new Date(sentDate.getTime() + 86400000 * (3 + Math.floor(Math.random()*4))) : null;
+    const followUpOpenedDate = hasFollowUp && Math.random() > 0.5 ? new Date(followUpSentDate.getTime() + Math.random()*86400000) : null;
+    const followUpRepliedDate = hasFollowUp && followUpOpenedDate && Math.random() > 0.7 ? new Date(followUpOpenedDate.getTime() + Math.random()*86400000*2) : null;
+    const finalStatus = followUpRepliedDate ? 'replied' : status;
+
+    return {
+      id: i + 1, email: firstName.toLowerCase() + '@' + ['gmail.com','hotmail.nl','outlook.com','live.nl','icloud.com'][i%5],
+      firstName, fullName: name, handle, platform: platforms[i % platforms.length],
+      followers, country: countries[i % countries.length], status: finalStatus,
+      sentVia: account,
+      sequence: [
+        { step: 1, label: 'Eerste email', subject: 'Verdien aan je bereik, word VIP op Shoutout.vip',
+          sentAt: sentDate ? sentDate.toISOString() : null, openedAt: openedDate ? openedDate.toISOString() : null,
+          clickedAt: clickedDate ? clickedDate.toISOString() : null, repliedAt: repliedDate ? repliedDate.toISOString() : null,
+          bouncedAt: status === 'bounced' && sentDate ? new Date(sentDate.getTime() + 60000).toISOString() : null },
+        ...(hasFollowUp ? [{ step: 2, label: 'Follow-up', subject: 'Nog even over Shoutout.vip...',
+          sentAt: followUpSentDate ? followUpSentDate.toISOString() : null, openedAt: followUpOpenedDate ? followUpOpenedDate.toISOString() : null,
+          clickedAt: null, repliedAt: followUpRepliedDate ? followUpRepliedDate.toISOString() : null, bouncedAt: null }] : []),
+      ],
+    };
+  });
+})();
+
+// ============================================================
+// API CLIENT â talks to your Cloudflare Worker
+// ============================================================
+class InstantlyAPI {
+  constructor(workerUrl) {
+    this.baseUrl = workerUrl.replace(/\/$/, '');
+  }
+
+  async get(path, params = {}) {
+    const url = new URL(this.baseUrl + path);
+    Object.entries(params).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
+    });
+    const resp = await fetch(url.toString());
+    if (!resp.ok) throw new Error(`API ${resp.status}: ${resp.statusText}`);
+    return resp.json();
+  }
+
+  async post(path, body) {
+    const resp = await fetch(this.baseUrl + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!resp.ok) throw new Error(`API ${resp.status}: ${resp.statusText}`);
+    return resp.json();
+  }
+
+  async healthCheck() {
+    return this.get('/api/health');
+  }
+
+  async getCampaigns() {
+    return this.get('/api/campaigns');
+  }
+
+  async getCampaignSummary(campaignId) {
+    return this.get('/api/campaign/summary', { campaign_id: campaignId });
+  }
+
+  async getLeads(campaignId, limit = 100, skip = 0) {
+    return this.get('/api/leads', { campaign_id: campaignId, limit, skip });
+  }
+
+  async getAccounts() {
+    return this.get('/api/accounts');
+  }
+
+  async sendFollowUp(campaignId, email) {
+    return this.post('/api/lead/email', { campaign_id: campaignId, email });
+  }
+}
+
+// Transform Instantly lead data â our creator model
+function transformLead(lead, index, campaignName) {
+  const email = lead.email || '';
+  const firstName = lead.first_name || lead.firstName || email.split('@')[0] || 'Onbekend';
+  const lastName = lead.last_name || lead.lastName || '';
+  const fullName = (firstName + ' ' + lastName).trim() || email;
+
+  // Determine sending account from lead's assigned_email or campaign_account
+  const sentViaEmail = lead.email_account || lead.assigned_email || lead.from_email || '';
+  const sentVia = getAccountByEmail(sentViaEmail);
+
+  // Map Instantly statuses to our status model
+  // Instantly statuses: 0=not sent, 1=sent, 2=opened, 3=replied, -1=bounced, -2=unsubscribed
+  let status = 'pending';
+  const istatus = lead.lead_status || lead.status;
+  if (istatus === 3 || istatus === 'Interested' || istatus === 'Meeting Booked' || lead.has_replied) status = 'replied';
+  else if (lead.is_unsubscribed) status = 'unsubscribed';
+  else if (istatus === -1 || lead.has_bounced) status = 'bounced';
+  else if (lead.has_clicked) status = 'clicked';
+  else if (istatus === 2 || lead.is_read || lead.has_opened) status = 'opened';
+  else if (istatus === 1 || lead.email_sent) status = 'sent';
+
+  // Build sequence from Instantly's step data if available
+  const sequence = [];
+  const steps = lead.subsequence_events || lead.steps || [];
+  if (steps.length > 0) {
+    steps.forEach((step, si) => {
+      sequence.push({
+        step: si + 1,
+        label: si === 0 ? 'Eerste email' : `Follow-up ${si}`,
+        subject: step.subject || (si === 0 ? 'Verdien aan je bereik' : 'Nog even over Shoutout.vip...'),
+        sentAt: step.sent_at || step.timestamp || null,
+        openedAt: step.opened_at || null,
+        clickedAt: step.clicked_at || null,
+        repliedAt: step.replied_at || null,
+        bouncedAt: step.bounced_at || null,
+      });
+    });
+  } else {
+    // Fallback: build single step from lead-level data
+    sequence.push({
+      step: 1,
+      label: 'Eerste email',
+      subject: lead.email_subject || 'Verdien aan je bereik, word VIP op Shoutout.vip',
+      sentAt: lead.sent_at || lead.timestamp || null,
+      openedAt: lead.opened_at || (lead.is_read ? lead.last_open_at : null) || null,
+      clickedAt: lead.clicked_at || null,
+      repliedAt: lead.replied_at || (lead.has_replied ? lead.reply_timestamp : null) || null,
+      bouncedAt: lead.bounced_at || (lead.has_bounced ? lead.bounce_timestamp : null) || null,
+    });
+  }
+
+  return {
+    id: lead.id || index + 1,
+    email,
+    firstName,
+    fullName,
+    handle: lead.handle || lead.custom_handle || ('@' + firstName.toLowerCase()),
+    platform: lead.platform || lead.custom_platform || 'Instagram',
+    followers: parseInt(lead.followers || lead.custom_followers || '0') || 0,
+    country: lead.country || lead.custom_country || 'NL',
+    status,
+    sentVia,
+    campaignId: lead.campaign_id || '',
+    campaignName: campaignName || '',
+    sequence,
+  };
+}
+
+// ============================================================
+// ICONS
+// ============================================================
+const Icons = {
+  search: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>,
+  dashboard: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>,
+  people: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+  settings: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4m0 14v4M4.22 4.22l2.83 2.83m9.9 9.9 2.83 2.83M1 12h4m14 0h4M4.22 19.78l2.83-2.83m9.9-9.9 2.83-2.83"/></svg>,
+  back: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m15 18-6-6 6-6"/></svg>,
+  send: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m22 2-7 20-4-9-9-4z"/><path d="m22 2-10 10"/></svg>,
+  eye: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
+  click: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 15l6 6m-6-6v4.8c0 .12.1.2.21.18l4.49-1.3a.2.2 0 0 0 .09-.32l-4.79-4.79a.2.2 0 0 0-.21-.05l-.01.01a.19.19 0 0 0-.12.18z"/><circle cx="12" cy="12" r="10"/></svg>,
+  reply: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>,
+  bounce: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6m0-6 6 6"/></svg>,
+  fire: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 12c2-2.96 0-7-1-8 0 3.04-4 6.04-4 8a5 5 0 0 0 10 0c0-1.5-.5-3-2-4-1 1-2 2-3 4z"/></svg>,
+  mail: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>,
+  followup: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>,
+  check: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>,
+  alert: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+  refresh: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>,
+  cloud: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>,
+  link: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>,
+};
+
+// ============================================================
+// HELPERS
+// ============================================================
+const formatNum = n => n >= 1000000 ? (n/1000000).toFixed(1)+'M' : n >= 1000 ? (n/1000).toFixed(n>=10000?0:1)+'K' : n.toString();
+const formatDate = iso => { if (!iso) return '-'; const d = new Date(iso); return d.toLocaleDateString('nl-NL',{day:'numeric',month:'short'}) + ' ' + d.toLocaleTimeString('nl-NL',{hour:'2-digit',minute:'2-digit'}); };
+const statusLabel = { pending:'Wacht',sent:'Verstuurd',opened:'Geopend',clicked:'Geklikt',replied:'Beantwoord',bounced:'Bounced' };
+const statusOrder = { replied:5,clicked:4,opened:3,sent:2,bounced:1,pending:0 };
+const statusColors = { sent:'#60a5fa',opened:'#34d399',clicked:'#a78bfa',replied:'#fbbf24',bounced:'#f87171',pending:'#64748b' };
+
+// ============================================================
+// UI COMPONENTS (unchanged from v2)
+// ============================================================
+
+function Toast({ message, type, onClose }) {
+  useEffect(() => { const t = setTimeout(onClose, 3000); return () => clearTimeout(t); }, []);
+  const colors = { success: '#34d399', error: '#f87171', info: '#60a5fa', warning: '#fbbf24' };
+  return (
+    <div className="toast fade-in" style={{borderColor: colors[type]}}>
+      <div style={{width:8,height:8,borderRadius:'50%',background:colors[type]}}/>
+      {message}
+    </div>
+  );
+}
+
+function ConfirmModal({ title, message, onConfirm, onCancel, confirmLabel, creator }) {
+  return (
+    <div className="confirm-modal">
+      <div className="confirm-backdrop" onClick={onCancel}/>
+      <div className="confirm-box fade-in">
+        <div style={{fontSize:17,fontWeight:700,color:'#f1f5f9',marginBottom:8}}>{title}</div>
+        <p style={{fontSize:13,color:'#94a3b8',lineHeight:1.6,marginBottom:20}}>{message}</p>
+        {creator && (
+          <div style={{background:'#0f172a',borderRadius:8,padding:12,marginBottom:16,fontSize:12,color:'#64748b'}}>
+            <div><strong style={{color:'#e2e8f0'}}>Aan:</strong> {creator.email}</div>
+            <div><strong style={{color:'#e2e8f0'}}>Via:</strong> {creator.sentVia.email}</div>
+            <div><strong style={{color:'#e2e8f0'}}>Onderwerp:</strong> Nog even over Shoutout.vip...</div>
+          </div>
+        )}
+        <div style={{display:'flex',gap:10}}>
+          <button className="btn-secondary" onClick={onCancel} style={{flex:1}}>Annuleren</button>
+          <button className="btn-followup" onClick={onConfirm} style={{flex:1}}>{confirmLabel || 'Bevestigen'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ icon, label, value, total, color, percentage }) {
+  return (
+    <div className="stat-card fade-in">
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
+        <div style={{width:32,height:32,borderRadius:8,background:`${color}22`,display:'flex',alignItems:'center',justifyContent:'center',color}}>
+          <div style={{width:18,height:18}}>{icon}</div>
+        </div>
+        <span style={{fontSize:12,color:'#94a3b8',fontWeight:500}}>{label}</span>
+      </div>
+      <div style={{fontSize:28,fontWeight:800,color:'#f1f5f9',letterSpacing:'-0.02em'}}>{value}</div>
+      {total != null && (
+        <div style={{marginTop:8}}>
+          <div className="progress-bar">
+            <div className="progress-fill" style={{width:`${percentage}%`,background:color}}/>
+          </div>
+          <div style={{fontSize:11,color:'#64748b',marginTop:4}}>{percentage.toFixed(1)}% van {total}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AccountTag({ account }) {
+  return (
+    <span className={`account-tag account-${account.id}`}>
+      <div style={{width:6,height:6,borderRadius:'50%',background:account.color}}/>
+      {account.label}
+    </span>
+  );
+}
+
+function Loader({ text }) {
+  return (
+    <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:60,gap:16}}>
+      <div className="spinner"/>
+      <span style={{fontSize:13,color:'#64748b'}}>{text || 'Laden...'}</span>
+    </div>
+  );
+}
+
+function SequenceSteps({ sequence }) {
+  return (
+    <div>
+      {sequence.map((step, i) => {
+        const isActive = step.sentAt && !step.bouncedAt;
+        const stepStatus = step.repliedAt ? 'replied' : step.clickedAt ? 'clicked' : step.openedAt ? 'opened' : step.bouncedAt ? 'bounced' : step.sentAt ? 'sent' : 'pending';
+        return (
+          <div key={i} className={`step-card ${isActive ? 'active-step' : ''}`}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+              <div style={{display:'flex',alignItems:'center',gap:8}}>
+                <div style={{width:24,height:24,borderRadius:'50%',background: step.sentAt ? `${statusColors[stepStatus]}22` : '#334155',display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:700,color: step.sentAt ? statusColors[stepStatus] : '#64748b'}}>
+                  {step.step}
+                </div>
+                <div>
+                  <div style={{fontSize:13,fontWeight:600,color:'#f1f5f9'}}>{step.label}</div>
+                  <div style={{fontSize:11,color:'#64748b'}}>{step.subject}</div>
+                </div>
+              </div>
+              <span className={`badge badge-${stepStatus}`}>{statusLabel[stepStatus]}</span>
+            </div>
+            <div style={{display:'flex',flexWrap:'wrap',gap:6,marginTop:6}}>
+              {step.sentAt && <div style={{fontSize:11,color:'#64748b',display:'flex',alignItems:'center',gap:4}}><div style={{width:12,height:12,color:'#60a5fa'}}>{Icons.send}</div>{formatDate(step.sentAt)}</div>}
+              {step.openedAt && <div style={{fontSize:11,color:'#64748b',display:'flex',alignItems:'center',gap:4}}><div style={{width:12,height:12,color:'#34d399'}}>{Icons.eye}</div>{formatDate(step.openedAt)}</div>}
+              {step.clickedAt && <div style={{fontSize:11,color:'#64748b',display:'flex',alignItems:'center',gap:4}}><div style={{width:12,height:12,color:'#a78bfa'}}>{Icons.click}</div>{formatDate(step.clickedAt)}</div>}
+              {step.repliedAt && <div style={{fontSize:11,color:'#fbbf24',fontWeight:600,display:'flex',alignItems:'center',gap:4}}><div style={{width:12,height:12}}>{Icons.reply}</div>{formatDate(step.repliedAt)}</div>}
+              {step.bouncedAt && <div style={{fontSize:11,color:'#f87171',fontWeight:600,display:'flex',alignItems:'center',gap:4}}><div style={{width:12,height:12}}>{Icons.bounce}</div>{formatDate(step.bouncedAt)}</div>}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function CreatorRow({ creator, onClick }) {
+  const hasFollowUp = creator.sequence.length > 1;
+  return (
+    <div className="creator-row fade-in" onClick={onClick}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <div style={{width:36,height:36,borderRadius:'50%',background:`${statusColors[creator.status]}22`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,fontWeight:700,color:statusColors[creator.status],flexShrink:0}}>
+              {creator.firstName[0]}
+            </div>
+            <div style={{minWidth:0}}>
+              <div style={{display:'flex',alignItems:'center',gap:6}}>
+                <span style={{fontSize:14,fontWeight:600,color:'#f1f5f9',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{creator.fullName}</span>
+                {hasFollowUp && <span className="badge badge-followup" style={{fontSize:9,padding:'1px 6px'}}>{creator.sequence.length}x</span>}
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:6,marginTop:2}}>
+                <span style={{fontSize:12,color:'#64748b'}}>{creator.email}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:4,flexShrink:0,marginLeft:12}}>
+          <span className={`badge badge-${creator.status}`}>{statusLabel[creator.status]}</span>
+          <AccountTag account={creator.sentVia}/>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CreatorDetail({ creator, onClose, onFollowUp }) {
+  const timeline = [];
+  creator.sequence.forEach(step => {
+    if (step.sentAt) timeline.push({ type:'sent', date:step.sentAt, label:`${step.label} verstuurd`, sublabel: `via ${creator.sentVia.email}`, color:'#60a5fa', step: step.step });
+    if (step.bouncedAt) timeline.push({ type:'bounced', date:step.bouncedAt, label:`${step.label} gebounced`, color:'#f87171', step: step.step });
+    if (step.openedAt) timeline.push({ type:'opened', date:step.openedAt, label:`${step.label} geopend`, color:'#34d399', step: step.step });
+    if (step.clickedAt) timeline.push({ type:'clicked', date:step.clickedAt, label:'Link geklikt', color:'#a78bfa', step: step.step });
+    if (step.repliedAt) timeline.push({ type:'replied', date:step.repliedAt, label:'Heeft gereageerd!', color:'#fbbf24', step: step.step });
+  });
+  timeline.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+  const canFollowUp = creator.status !== 'pending' && creator.status !== 'bounced' && creator.status !== 'replied' && creator.sequence.length < 3;
+  const lastStep = creator.sequence[creator.sequence.length - 1];
+  const daysSinceLastSend = lastStep.sentAt ? Math.floor((Date.now() - new Date(lastStep.sentAt).getTime()) / 86400000) : null;
+
+  return (
+    <>
+      <div className="detail-overlay" onClick={onClose}/>
+      <div className="detail-panel slide-in">
+        <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:24}}>
+          <button onClick={onClose} style={{background:'none',border:'none',color:'#94a3b8',cursor:'pointer',padding:4}}>
+            <div style={{width:24,height:24}}>{Icons.back}</div>
+          </button>
+          <div style={{flex:1}}>
+            <div style={{fontSize:18,fontWeight:700,color:'#f1f5f9'}}>{creator.fullName}</div>
+            <div style={{fontSize:13,color:'#64748b'}}>{creator.email}</div>
+          </div>
+          <span className={`badge badge-${creator.status}`} style={{fontSize:12,padding:'5px 12px'}}>{statusLabel[creator.status]}</span>
+        </div>
+
+        {/* Profile */}
+        <div style={{background:'#1e293b',borderRadius:12,padding:16,marginBottom:16,border:'1px solid #334155'}}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+            <div><span style={{fontSize:11,color:'#64748b'}}>Handle</span><div style={{fontSize:14,fontWeight:500}}>{creator.handle}</div></div>
+            <div><span style={{fontSize:11,color:'#64748b'}}>Platform</span><div style={{fontSize:14,fontWeight:500}}>{creator.platform}</div></div>
+            <div><span style={{fontSize:11,color:'#64748b'}}>Followers</span><div style={{fontSize:14,fontWeight:500}}>{formatNum(creator.followers)}</div></div>
+            <div><span style={{fontSize:11,color:'#64748b'}}>Land</span><div style={{fontSize:14,fontWeight:500}}>{creator.country === 'NL' ? 'Nederland' : creator.country === 'BE' ? 'BelgiÃ«' : creator.country}</div></div>
+          </div>
+        </div>
+
+        {/* Sent via */}
+        <div style={{background:'#1e293b',borderRadius:12,padding:14,marginBottom:16,border:'1px solid #334155',display:'flex',alignItems:'center',gap:10}}>
+          <div style={{width:32,height:32,borderRadius:8,background:`${creator.sentVia.color}22`,display:'flex',alignItems:'center',justifyContent:'center',color:creator.sentVia.color}}>
+            <div style={{width:16,height:16}}>{Icons.mail}</div>
+          </div>
+          <div>
+            <div style={{fontSize:11,color:'#64748b'}}>Benaderd via</div>
+            <div style={{fontSize:14,fontWeight:600,color:creator.sentVia.color}}>{creator.sentVia.email}</div>
+          </div>
+        </div>
+
+        {/* Sequence steps */}
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:13,fontWeight:600,color:'#94a3b8',marginBottom:10,textTransform:'uppercase',letterSpacing:1}}>Email sequence ({creator.sequence.length} {creator.sequence.length === 1 ? 'stap' : 'stappen'})</div>
+          <SequenceSteps sequence={creator.sequence}/>
+        </div>
+
+        {/* Follow-up button */}
+        {canFollowUp && (
+          <div style={{marginBottom:20}}>
+            <button className="btn-followup" onClick={() => onFollowUp(creator)}>
+              <div style={{width:18,height:18}}>{Icons.followup}</div>
+              Follow-up versturen (email {creator.sequence.length + 1})
+            </button>
+            {daysSinceLastSend !== null && daysSinceLastSend < 3 && (
+              <div style={{display:'flex',alignItems:'center',gap:6,marginTop:8,padding:'8px 12px',background:'rgba(251,146,60,0.1)',borderRadius:8}}>
+                <div style={{width:14,height:14,color:'#fb923c',flexShrink:0}}>{Icons.alert}</div>
+                <span style={{fontSize:11,color:'#fb923c'}}>Laatste email was {daysSinceLastSend} dag(en) geleden. Wacht liefst 3-5 dagen.</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {creator.status === 'replied' && (
+          <div style={{background:'rgba(251,191,36,0.08)',border:'1px solid rgba(251,191,36,0.2)',borderRadius:12,padding:14,display:'flex',alignItems:'center',gap:10}}>
+            <div style={{width:32,height:32,borderRadius:'50%',background:'rgba(251,191,36,0.15)',display:'flex',alignItems:'center',justifyContent:'center',color:'#fbbf24'}}>
+              <div style={{width:16,height:16}}>{Icons.check}</div>
+            </div>
+            <div>
+              <div style={{fontSize:13,fontWeight:600,color:'#fbbf24'}}>Creator heeft gereageerd</div>
+              <div style={{fontSize:11,color:'#92741d'}}>Geen verdere follow-up nodig</div>
+            </div>
+          </div>
+        )}
+
+        {/* Timeline */}
+        <div style={{marginTop:20}}>
+          <div style={{fontSize:13,fontWeight:600,color:'#94a3b8',marginBottom:16,textTransform:'uppercase',letterSpacing:1}}>Volledige tijdlijn</div>
+          {timeline.length === 0 ? (
+            <div style={{color:'#475569',fontSize:13,fontStyle:'italic'}}>Nog geen activiteit</div>
+          ) : (
+            timeline.map((item, i) => (
+              <div key={i} className="timeline-item">
+                <div className="timeline-dot" style={{borderColor:item.color,background:i === timeline.length-1 ? item.color : 'transparent'}}/>
+                <div style={{fontSize:14,fontWeight:600,color:'#f1f5f9'}}>{item.label}</div>
+                {item.sublabel && <div style={{fontSize:11,color:'#475569',marginTop:1}}>{item.sublabel}</div>}
+                <div style={{fontSize:12,color:'#64748b',marginTop:2}}>{formatDate(item.date)}</div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function DashboardView({ creators, isLive, lastRefresh, onRefresh, loading }) {
+  const stats = useMemo(() => {
+    const total = creators.length;
+    const sent = creators.filter(c => c.sequence[0].sentAt).length;
+    const opened = creators.filter(c => c.sequence.some(s => s.openedAt)).length;
+    const clicked = creators.filter(c => c.sequence.some(s => s.clickedAt)).length;
+    const replied = creators.filter(c => c.status === 'replied').length;
+    const bounced = creators.filter(c => c.status === 'bounced').length;
+    const followUps = creators.filter(c => c.sequence.length > 1).length;
+    const pending = creators.filter(c => c.status === 'pending').length;
+    return { total, sent, opened, clicked, replied, bounced, followUps, pending };
+  }, [creators]);
+
+  const accountStats = useMemo(() => {
+    return ACCOUNTS.map(acc => ({
+      ...acc,
+      total: creators.filter(c => c.sentVia.id === acc.id).length,
+      sent: creators.filter(c => c.sentVia.id === acc.id && c.sequence[0].sentAt).length,
+      opened: creators.filter(c => c.sentVia.id === acc.id && c.sequence.some(s => s.openedAt)).length,
+      replied: creators.filter(c => c.sentVia.id === acc.id && c.status === 'replied').length,
+    }));
+  }, [creators]);
+
+  return (
+    <div className="fade-in" style={{padding:'20px 16px 100px'}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:24}}>
+        <div>
+          <h1 style={{fontSize:24,fontWeight:800,color:'#f1f5f9',letterSpacing:'-0.02em'}}>Dashboard</h1>
+          <p style={{fontSize:13,color:'#64748b',marginTop:4}}>Shoutout.vip Creator Outreach</p>
+        </div>
+        <button onClick={onRefresh} disabled={loading} style={{background:'#1e293b',border:'1px solid #334155',borderRadius:10,padding:8,color:'#94a3b8',cursor:'pointer',display:'flex',alignItems:'center',gap:6}}>
+          <div style={{width:18,height:18,animation: loading ? 'spin 1s linear infinite' : 'none'}}>{Icons.refresh}</div>
+        </button>
+      </div>
+
+      {/* Connection status */}
+      <div style={{background: isLive ? 'linear-gradient(135deg,#05966922,#10b98122)' : 'linear-gradient(135deg,#7c3aed22,#6d28d922)',border: `1px solid ${isLive ? '#10b98144' : '#7c3aed44'}`,borderRadius:12,padding:16,marginBottom:12,display:'flex',alignItems:'center',gap:12}}>
+        <div style={{width:36,height:36,borderRadius:'50%',background: isLive ? '#10b98133' : '#7c3aed33',display:'flex',alignItems:'center',justifyContent:'center',color: isLive ? '#34d399' : '#a78bfa'}}>
+          <div style={{width:20,height:20}}>{isLive ? Icons.cloud : Icons.alert}</div>
+        </div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:14,fontWeight:600,color: isLive ? '#34d399' : '#c4b5fd'}}>{isLive ? 'Live verbonden' : 'Demo modus'}</div>
+          <div style={{fontSize:12,color: isLive ? '#059669' : '#8b5cf6'}}>
+            {isLive ? `Laatste sync: ${lastRefresh ? formatDate(lastRefresh) : 'zojuist'}` : 'Stel Worker URL in bij Instellingen'}
+          </div>
+        </div>
+      </div>
+
+      {/* Warmup */}
+      <div style={{background:'linear-gradient(135deg,#7c3aed22,#6d28d922)',border:'1px solid #7c3aed44',borderRadius:12,padding:16,marginBottom:20,display:'flex',alignItems:'center',gap:12}}>
+        <div style={{width:36,height:36,borderRadius:'50%',background:'#7c3aed33',display:'flex',alignItems:'center',justifyContent:'center',color:'#a78bfa'}}>
+          <div style={{width:20,height:20}} className="pulse">{Icons.fire}</div>
+        </div>
+        <div>
+          <div style={{fontSize:14,fontWeight:600,color:'#c4b5fd'}}>Warmup actief</div>
+          <div style={{fontSize:12,color:'#8b5cf6'}}>3 accounts Â· gestart 16 apr 2026</div>
+        </div>
+      </div>
+
+      {/* Main stats */}
+      <div className="stat-grid" style={{display:'grid',gridTemplateColumns:'repeat(2, 1fr)',gap:12,marginBottom:24}}>
+        <StatCard icon={Icons.people} label="Totaal creators" value={formatNum(stats.total)} color="#94a3b8"/>
+        <StatCard icon={Icons.send} label="Verstuurd" value={stats.sent} total={stats.total} percentage={stats.total?stats.sent/stats.total*100:0} color="#60a5fa"/>
+        <StatCard icon={Icons.eye} label="Geopend" value={stats.opened} total={stats.sent||1} percentage={stats.sent?stats.opened/stats.sent*100:0} color="#34d399"/>
+        <StatCard icon={Icons.reply} label="Beantwoord" value={stats.replied} total={stats.sent||1} percentage={stats.sent?stats.replied/stats.sent*100:0} color="#fbbf24"/>
+        <StatCard icon={Icons.followup} label="Follow-ups" value={stats.followUps} total={stats.sent||1} percentage={stats.sent?stats.followUps/stats.sent*100:0} color="#fb923c"/>
+        <StatCard icon={Icons.bounce} label="Bounced" value={stats.bounced} total={stats.sent||1} percentage={stats.sent?stats.bounced/stats.sent*100:0} color="#f87171"/>
+      </div>
+
+      {/* Per account breakdown */}
+      <div style={{fontSize:15,fontWeight:700,color:'#f1f5f9',marginBottom:12}}>Per account</div>
+      {accountStats.map(acc => (
+        <div key={acc.id} style={{background:'#1e293b',borderRadius:12,padding:14,marginBottom:8,border:'1px solid #334155'}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <div style={{width:8,height:8,borderRadius:'50%',background:acc.color}}/>
+              <span style={{fontSize:13,fontWeight:600,color:'#f1f5f9'}}>{acc.email}</span>
+            </div>
+            <span style={{fontSize:12,color:'#64748b'}}>{acc.total} creators</span>
+          </div>
+          <div style={{display:'flex',gap:16}}>
+            <div style={{fontSize:11,color:'#64748b'}}>Verstuurd <strong style={{color:'#60a5fa'}}>{acc.sent}</strong></div>
+            <div style={{fontSize:11,color:'#64748b'}}>Geopend <strong style={{color:'#34d399'}}>{acc.opened}</strong></div>
+            <div style={{fontSize:11,color:'#64748b'}}>Beantwoord <strong style={{color:'#fbbf24'}}>{acc.replied}</strong></div>
+          </div>
+        </div>
+      ))}
+
+      {/* Recent replies */}
+      <div style={{fontSize:15,fontWeight:700,color:'#f1f5f9',marginBottom:12,marginTop:24}}>Laatste reacties</div>
+      {creators.filter(c=>c.status==='replied').slice(0,5).map(c => (
+        <div key={c.id} style={{background:'#1e293b',borderRadius:10,padding:12,marginBottom:8,border:'1px solid #334155',display:'flex',alignItems:'center',gap:10}}>
+          <div style={{width:8,height:8,borderRadius:'50%',background:'#fbbf24',flexShrink:0}}/>
+          <div style={{flex:1,minWidth:0}}>
+            <span style={{fontSize:13,fontWeight:600,color:'#f1f5f9'}}>{c.fullName}</span>
+            <span style={{fontSize:12,color:'#64748b'}}> Â· {c.email}</span>
+          </div>
+          <AccountTag account={c.sentVia}/>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function CreatorsView({ creators, onFollowUp, loading }) {
+  const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState('all');
+  const [accountFilter, setAccountFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('status');
+  const [selected, setSelected] = useState(null);
+
+  const filtered = useMemo(() => {
+    let list = [...creators];
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(c => c.fullName.toLowerCase().includes(q) || c.handle.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.platform.toLowerCase().includes(q));
+    }
+    if (filter !== 'all') {
+      if (filter === 'followup') { list = list.filter(c => c.sequence.length > 1); }
+      else { list = list.filter(c => c.status === filter); }
+    }
+    if (accountFilter !== 'all') list = list.filter(c => c.sentVia.id === accountFilter);
+    list.sort((a,b) => {
+      if (sortBy === 'status') return (statusOrder[b.status]||0) - (statusOrder[a.status]||0);
+      if (sortBy === 'name') return a.fullName.localeCompare(b.fullName);
+      if (sortBy === 'followers') return b.followers - a.followers;
+      if (sortBy === 'email') return a.email.localeCompare(b.email);
+      return 0;
+    });
+    return list;
+  }, [creators, search, filter, accountFilter, sortBy]);
+
+  if (loading) return <Loader text="Creators laden vanuit Instantly..."/>;
+
+  return (
+    <div style={{padding:'20px 16px 100px'}}>
+      <div style={{marginBottom:16}}>
+        <h1 style={{fontSize:24,fontWeight:800,color:'#f1f5f9',letterSpacing:'-0.02em'}}>Creators</h1>
+        <p style={{fontSize:13,color:'#64748b',marginTop:4}}>{filtered.length} van {creators.length} creators</p>
+      </div>
+
+      {/* Search */}
+      <div style={{position:'relative',marginBottom:14}}>
+        <div style={{position:'absolute',left:14,top:'50%',transform:'translateY(-50%)',width:20,height:20,color:'#64748b'}}>{Icons.search}</div>
+        <input className="search-input" placeholder="Zoek op naam, handle, email..." value={search} onChange={e => setSearch(e.target.value)}/>
+      </div>
+
+      {/* Status filters */}
+      <div style={{display:'flex',gap:6,overflowX:'auto',paddingBottom:6,marginBottom:6,WebkitOverflowScrolling:'touch'}}>
+        {[['all','Alle'],['replied','Beantwoord'],['opened','Geopend'],['clicked','Geklikt'],['sent','Verstuurd'],['followup','Follow-up'],['bounced','Bounced'],['pending','Wacht']].map(([key,label]) => (
+          <button key={key} className={`filter-chip ${filter===key?'active':''}`} onClick={() => setFilter(key)}>{label}</button>
+        ))}
+      </div>
+
+      {/* Account filters */}
+      <div style={{display:'flex',gap:6,overflowX:'auto',paddingBottom:6,marginBottom:6}}>
+        <button className={`filter-chip ${accountFilter==='all'?'active':''}`} onClick={() => setAccountFilter('all')} style={{fontSize:11,padding:'4px 10px'}}>Alle accounts</button>
+        {ACCOUNTS.map(acc => (
+          <button key={acc.id} className={`filter-chip ${accountFilter===acc.id?'active':''}`} onClick={() => setAccountFilter(acc.id)} style={{fontSize:11,padding:'4px 10px',display:'flex',alignItems:'center',gap:4}}>
+            <div style={{width:6,height:6,borderRadius:'50%',background:acc.color}}/>
+            {acc.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Sort */}
+      <div style={{display:'flex',gap:6,marginBottom:14}}>
+        {[['status','Status'],['name','Naam'],['email','Email'],['followers','Followers']].map(([key,label]) => (
+          <button key={key} className={`filter-chip ${sortBy===key?'active':''}`} onClick={() => setSortBy(key)} style={{fontSize:11,padding:'4px 10px'}}>{label}</button>
+        ))}
+      </div>
+
+      {/* List */}
+      {filtered.map(c => <CreatorRow key={c.id} creator={c} onClick={() => setSelected(c)}/>)}
+      {filtered.length === 0 && <div style={{textAlign:'center',color:'#475569',padding:40,fontSize:14}}>Geen creators gevonden</div>}
+
+      {selected && <CreatorDetail creator={selected} onClose={() => setSelected(null)} onFollowUp={onFollowUp}/>}
+    </div>
+  );
+}
+
+function SettingsView({ config, onSave, connectionStatus, onTestConnection }) {
+  const [workerUrl, setWorkerUrl] = useState(config.workerUrl || '');
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState(null);
+
+  const handleTest = async () => {
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const api = new InstantlyAPI(workerUrl);
+      const resp = await api.healthCheck();
+      if (resp.status === 'ok') {
+        setTestResult({ ok: true, msg: 'Verbinding gelukt!' });
+      } else {
+        setTestResult({ ok: false, msg: 'Worker bereikbaar maar geen geldige response' });
+      }
+    } catch (e) {
+      setTestResult({ ok: false, msg: `Fout: ${e.message}` });
+    }
+    setTesting(false);
+  };
+
+  const handleSave = () => {
+    onSave({ workerUrl });
+    if (onTestConnection) onTestConnection(workerUrl);
+  };
+
+  return (
+    <div className="fade-in" style={{padding:'20px 16px 100px'}}>
+      <div style={{marginBottom:24}}>
+        <h1 style={{fontSize:24,fontWeight:800,color:'#f1f5f9',letterSpacing:'-0.02em'}}>Instellingen</h1>
+      </div>
+
+      {/* Worker URL config */}
+      <div style={{background:'#1e293b',borderRadius:12,padding:20,border:'1px solid #334155',marginBottom:16}}>
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+          <div style={{width:18,height:18,color:'#a78bfa'}}>{Icons.cloud}</div>
+          <div style={{fontSize:15,fontWeight:600,color:'#f1f5f9'}}>API Worker URL</div>
+        </div>
+        <p style={{fontSize:12,color:'#64748b',marginBottom:12}}>
+          De URL van je Cloudflare Worker die als proxy dient voor de Instantly API.
+          Voorbeeld: https://shoutout-outreach-proxy.jouw-naam.workers.dev
+        </p>
+        <input
+          className="api-input"
+          placeholder="https://shoutout-outreach-proxy.ferencsomogyi.workers.dev"
+          value={workerUrl}
+          onChange={e => { setWorkerUrl(e.target.value); setTestResult(null); }}
+        />
+        <div style={{display:'flex',gap:8,marginTop:12}}>
+          <button className="btn-secondary" onClick={handleTest} disabled={testing || !workerUrl} style={{flex:1}}>
+            {testing ? 'Testen...' : 'Test verbinding'}
+          </button>
+          <button className="btn-primary" onClick={handleSave} disabled={!workerUrl} style={{flex:1}}>
+            Opslaan & verbinden
+          </button>
+        </div>
+        {testResult && (
+          <div style={{marginTop:10,padding:'8px 12px',borderRadius:8,fontSize:12,fontWeight:500,background: testResult.ok ? 'rgba(52,211,153,0.1)' : 'rgba(248,113,113,0.1)',color: testResult.ok ? '#34d399' : '#f87171'}}>
+            {testResult.ok ? 'â' : 'â'} {testResult.msg}
+          </div>
+        )}
+      </div>
+
+      {/* Connection status */}
+      <div style={{background:'#1e293b',borderRadius:12,padding:20,border:'1px solid #334155',marginBottom:16}}>
+        <div style={{fontSize:15,fontWeight:600,color:'#f1f5f9',marginBottom:12}}>Verbindingsstatus</div>
+        <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #334155'}}>
+          <div style={{width:8,height:8,borderRadius:'50%',background: connectionStatus === 'connected' ? '#34d399' : connectionStatus === 'error' ? '#f87171' : '#64748b'}}/>
+          <div style={{flex:1}}>
+            <span style={{fontSize:13,color:'#e2e8f0'}}>Cloudflare Worker</span>
+          </div>
+          <span style={{fontSize:11,fontWeight:500,color: connectionStatus === 'connected' ? '#34d399' : connectionStatus === 'error' ? '#f87171' : '#64748b'}}>
+            {connectionStatus === 'connected' ? 'Verbonden' : connectionStatus === 'error' ? 'Fout' : 'Niet verbonden'}
+          </span>
+        </div>
+      </div>
+
+      {/* Sending accounts */}
+      <div style={{background:'#1e293b',borderRadius:12,padding:20,border:'1px solid #334155',marginBottom:16}}>
+        <div style={{fontSize:15,fontWeight:600,color:'#f1f5f9',marginBottom:12}}>Sending accounts</div>
+        {ACCOUNTS.map(acc => (
+          <div key={acc.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 0',borderBottom:'1px solid #334155'}}>
+            <div style={{width:8,height:8,borderRadius:'50%',background:acc.color}}/>
+            <div style={{flex:1}}>
+              <span style={{fontSize:13,color:'#e2e8f0'}}>{acc.email}</span>
+            </div>
+            <span style={{fontSize:11,color:'#34d399',fontWeight:500}}>Warmup actief</span>
+          </div>
+        ))}
+      </div>
+
+      {/* About */}
+      <div style={{background:'#1e293b',borderRadius:12,padding:20,border:'1px solid #334155'}}>
+        <div style={{fontSize:15,fontWeight:600,color:'#f1f5f9',marginBottom:8}}>Over</div>
+        <p style={{fontSize:13,color:'#94a3b8',lineHeight:1.6}}>
+          Shoutout Creator Dashboard v3.0<br/>
+          Met live Instantly API-integratie via Cloudflare Worker.<br/><br/>
+          Gebouwd voor de creator outreach campagne van shoutout.vip.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// MAIN APP â data fetching + state management
+// ============================================================
+function App() {
+  const [tab, setTab] = useState('dashboard');
+  const [creators, setCreators] = useState(DEMO_CREATORS);
+  const [toast, setToast] = useState(null);
+  const [confirmModal, setConfirmModal] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [isLive, setIsLive] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState(null);
+  const [connectionStatus, setConnectionStatus] = useState('disconnected');
+  const [config, setConfig] = useState({ workerUrl: DEFAULT_WORKER_URL });
+  const [campaigns, setCampaigns] = useState([]);
+  const apiRef = useRef(null);
+
+  // Fetch all leads from all campaigns
+  const fetchAllData = useCallback(async (workerUrl) => {
+    const url = workerUrl || config.workerUrl;
+    if (!url) return;
+
+    setLoading(true);
+    try {
+      const api = new InstantlyAPI(url);
+      apiRef.current = api;
+
+      // First check health
+      await api.healthCheck();
+      setConnectionStatus('connected');
+
+      // Get campaigns
+      const campaignsData = await api.getCampaigns();
+      const campaignList = campaignsData.data || campaignsData || [];
+      setCampaigns(campaignList);
+
+      // Fetch leads from all campaigns
+      let allCreators = [];
+      for (const campaign of campaignList) {
+        const cid = campaign.id || campaign.campaign_id;
+        if (!cid) continue;
+
+        let skip = 0;
+        const batchSize = 100;
+        let hasMore = true;
+
+        while (hasMore) {
+          try {
+            const leadsData = await api.getLeads(cid, batchSize, skip);
+            const leads = leadsData.data || leadsData.leads || leadsData || [];
+            if (!Array.isArray(leads) || leads.length === 0) {
+              hasMore = false;
+              break;
+            }
+
+            const transformed = leads.map((lead, idx) =>
+              transformLead(lead, allCreators.length + idx, campaign.name || campaign.campaign_name || '')
+            );
+            allCreators = allCreators.concat(transformed);
+            skip += batchSize;
+
+            if (leads.length < batchSize) hasMore = false;
+          } catch (e) {
+            console.warn(`Error fetching leads batch at skip=${skip}:`, e);
+            hasMore = false;
+          }
+        }
+      }
+
+      if (allCreators.length > 0) {
+        setCreators(allCreators);
+        setIsLive(true);
+        setLastRefresh(new Date().toISOString());
+        setToast({ message: `${allCreators.length} creators geladen vanuit ${campaignList.length} campagne(s)`, type: 'success' });
+      } else {
+        // No leads yet â campaigns exist but no data
+        if (campaignList.length > 0) {
+          setToast({ message: `${campaignList.length} campagne(s) gevonden, maar nog geen leads verstuurd`, type: 'info' });
+          setIsLive(true);
+          setLastRefresh(new Date().toISOString());
+        } else {
+          setToast({ message: 'Verbonden, maar geen campagnes gevonden. Start een campagne in Instantly.', type: 'warning' });
+          setIsLive(true);
+          setLastRefresh(new Date().toISOString());
+        }
+      }
+
+    } catch (e) {
+      console.error('Fetch error:', e);
+      setConnectionStatus('error');
+      setIsLive(false);
+      setToast({ message: `Verbinding mislukt: ${e.message}`, type: 'error' });
+    }
+    setLoading(false);
+  }, [config.workerUrl]);
+
+  // Auto-refresh every 5 minutes when live
+  useEffect(() => {
+    if (!isLive) return;
+    const interval = setInterval(() => fetchAllData(), 300000);
+    return () => clearInterval(interval);
+  }, [isLive, fetchAllData]);
+
+  const handleSaveConfig = useCallback((newConfig) => {
+    setConfig(newConfig);
+  }, []);
+
+  const handleTestConnection = useCallback((url) => {
+    fetchAllData(url);
+  }, [fetchAllData]);
+
+  const handleRefresh = useCallback(() => {
+    fetchAllData();
+  }, [fetchAllData]);
+
+  const handleFollowUp = useCallback((creator) => {
+    setConfirmModal({
+      title: 'Follow-up versturen?',
+      message: `Wil je een follow-up email sturen naar ${creator.fullName}? Dit wordt email ${creator.sequence.length + 1} in de sequence.`,
+      creator,
+      onConfirm: async () => {
+        try {
+          if (apiRef.current && creator.campaignId) {
+            await apiRef.current.sendFollowUp(creator.campaignId, creator.email);
+          }
+          // Optimistic update
+          const now = new Date().toISOString();
+          setCreators(prev => prev.map(c => {
+            if (c.id !== creator.id) return c;
+            return {
+              ...c,
+              sequence: [...c.sequence, {
+                step: c.sequence.length + 1,
+                label: `Follow-up ${c.sequence.length}`,
+                subject: 'Nog even over Shoutout.vip...',
+                sentAt: now, openedAt: null, clickedAt: null, repliedAt: null, bouncedAt: null,
+              }]
+            };
+          }));
+          setConfirmModal(null);
+          setToast({ message: `Follow-up verstuurd naar ${creator.fullName}`, type: 'success' });
+        } catch (e) {
+          setConfirmModal(null);
+          setToast({ message: `Fout bij versturen: ${e.message}`, type: 'error' });
+        }
+      },
+    });
+  }, []);
+
+  return (
+    <div className="main-content">
+      {tab === 'dashboard' && <DashboardView creators={creators} isLive={isLive} lastRefresh={lastRefresh} onRefresh={handleRefresh} loading={loading}/>}
+      {tab === 'creators' && <CreatorsView creators={creators} onFollowUp={handleFollowUp} loading={loading}/>}
+      {tab === 'settings' && <SettingsView config={config} onSave={handleSaveConfig} connectionStatus={connectionStatus} onTestConnection={handleTestConnection}/>}
+
+      <div className="tab-bar">
+        {[['dashboard','Dashboard',Icons.dashboard],['creators','Creators',Icons.people],['settings','Instellingen',Icons.settings]].map(([key,label,icon]) => (
+          <div key={key} className={`tab-item ${tab===key?'active':''}`} onClick={() => setTab(key)}>
+            {icon}
+            <span>{label}</span>
+          </div>
+        ))}
+      </div>
+
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)}/>}
+      {confirmModal && (
+        <ConfirmModal
+          title={confirmModal.title}
+          message={confirmModal.message}
+          creator={confirmModal.creator}
+          confirmLabel="Versturen"
+          onConfirm={confirmModal.onConfirm}
+          onCancel={() => setConfirmModal(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+ReactDOM.render(<App/>, document.getElementById('root'));
+</script>
+</body>
+</html>
